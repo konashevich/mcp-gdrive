@@ -136,12 +136,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function startServer() {
   try {
     console.error("Initializing MCP Google Drive server...");
-    
-    // Force authentication at startup
-    await ensureAuth();
+    // Don't block server startup on auth; set creds quietly if available
+    await ensureAuthQuietly();
     
     // Create Express app
     const app = express();
+    // Active SSE transports keyed by sessionId
+    const transports = new Map<string, SSEServerTransport>();
     
     // Enable CORS for all origins (restrict in production)
     app.use(cors({
@@ -165,18 +166,48 @@ async function startServer() {
       res.json({ status: "ok", service: "mcp-gdrive" });
     });
     
-    // SSE endpoint for MCP
-    app.get("/sse", async (req, res) => {
+    // SSE endpoint for MCP (establishes the SSE stream)
+    app.get("/sse", async (_req, res) => {
       console.error("New SSE connection established");
       const transport = new SSEServerTransport("/message", res);
       await server.connect(transport);
+      // Register transport for routing POST messages
+      transports.set(transport.sessionId, transport);
+      transport.onclose = () => {
+        transports.delete(transport.sessionId);
+        console.error(`SSE session closed: ${transport.sessionId}`);
+      };
+      transport.onerror = (err) => {
+        console.error("SSE transport error:", err);
+      };
     });
     
-    // Message endpoint for SSE
-    app.post("/message", async (req, res) => {
-      // This will be handled by the SSE transport
-      res.status(200).end();
-    });
+    // Helper to route POST messages to the correct transport by sessionId
+    const routePostMessage = async (req: express.Request, res: express.Response) => {
+      // Accept sessionId from query, headers, or body for broader client compatibility
+      const headerSessionId =
+        (req.headers['x-session-id'] as string) ||
+        (req.headers['x-sse-session-id'] as string) ||
+        (req.headers['x-mcp-session-id'] as string) ||
+        (req.headers['x-client-session-id'] as string);
+      const bodySessionId = (req.body as any)?.sessionId;
+      const sessionId = (req.query.sessionId as string) || headerSessionId || bodySessionId || "";
+      if (!sessionId) {
+        res.status(400).end("Missing sessionId");
+        return;
+      }
+      const transport = transports.get(sessionId);
+      if (!transport) {
+        res.status(404).end("Unknown sessionId");
+        return;
+      }
+      await transport.handlePostMessage(req, res);
+    };
+    
+    // Message endpoint for SSE (new transport protocol)
+    app.post("/message", routePostMessage);
+    // Legacy fallback: some clients may POST to /sse
+    app.post("/sse", routePostMessage);
     
     // Start HTTP server
     app.listen(PORT, HOST, () => {
