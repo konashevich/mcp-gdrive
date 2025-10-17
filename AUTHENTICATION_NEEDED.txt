@@ -1,0 +1,87 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║              SERVER IS NOT RUNNING - AUTHENTICATION NEEDED            ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+The MCP Google Drive server cannot start because it needs OAuth authentication.
+
+Since this is a headless server (no browser), here's the EASIEST solution:
+
+════════════════════════════════════════════════════════════════════════
+✅ SOLUTION: Copy existing credentials from your Windows machine
+════════════════════════════════════════════════════════════════════════
+
+You already have the Google Drive MCP running on Windows at:
+  c:\Users\akona\OneDrive\Dev\Google_Drive_MCP\mcp-gdrive\
+
+STEP 1: Find the credentials file on Windows
+────────────────────────────────────────────────────────────────────────
+Look for either of these files on your Windows machine:
+  • .gdrive-server-credentials.json
+  • token.json
+
+Likely locations:
+  1. c:\Users\akona\OneDrive\Dev\Google_Drive_MCP\mcp-gdrive\.gdrive-server-credentials.json
+  2. c:\Users\akona\.config\mcp-gdrive\token.json
+  3. Check the GDRIVE_CREDS_DIR in your Windows .env file
+
+STEP 2: Copy the file to this Linux server
+────────────────────────────────────────────────────────────────────────
+Using WinSCP, FileZilla, or command line:
+
+Option A - Using WinSCP/FileZilla (GUI):
+  • Host: 192.168.1.114
+  • Username: pi
+  • Password: [your password]
+  • Copy the file to: /home/pi/.config/mcp-gdrive/
+  • Rename to: .gdrive-server-credentials.json
+
+Option B - Using SCP from Windows (PowerShell/CMD):
+  scp "c:\path\to\.gdrive-server-credentials.json" pi@192.168.1.114:/home/pi/.config/mcp-gdrive/
+
+Option C - Using WSL on Windows:
+  scp /mnt/c/path/to/.gdrive-server-credentials.json pi@192.168.1.114:/home/pi/.config/mcp-gdrive/
+
+STEP 3: Start the service
+────────────────────────────────────────────────────────────────────────
+Once the file is copied, run on this Linux server:
+  sudo systemctl start mcp-gdrive
+  sudo systemctl status mcp-gdrive
+
+STEP 4: Test the connection
+────────────────────────────────────────────────────────────────────────
+From Windows browser or PowerShell:
+  http://192.168.1.114:8547/health
+
+Expected response:
+  {"status":"ok","service":"mcp-gdrive"}
+
+════════════════════════════════════════════════════════════════════════
+🆘 IF YOU DON'T HAVE EXISTING CREDENTIALS
+════════════════════════════════════════════════════════════════════════
+
+Run this authentication script (it will guide you):
+  ./auth-helper.sh
+
+Or use SSH port forwarding for browser-based auth:
+  1. Exit this SSH session
+  2. Reconnect with: ssh -L 3000:localhost:3000 pi@192.168.1.114
+  3. Run: npm run start:http
+  4. Open browser to: http://localhost:3000
+
+════════════════════════════════════════════════════════════════════════
+📝 QUICK CHECK
+════════════════════════════════════════════════════════════════════════
+
+Current status:
+  • Server configured: ✅
+  • Auto-start enabled: ✅  
+  • Firewall configured: ✅
+  • OAuth credentials file: ❌ MISSING
+  • Server running: ❌ NOT STARTED
+
+Missing file location:
+  /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json
+
+Once you copy the credentials file, the server will start automatically!
+
+════════════════════════════════════════════════════════════════════════

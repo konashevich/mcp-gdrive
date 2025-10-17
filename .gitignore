@@ -40,6 +40,12 @@ logs/
 # Secrets and credentials
 credentials.json
 client_secret.json
+gcp-oauth.keys.json
+*-oauth.keys.json
+gdrive-server-credentials.json
+*-server-credentials.json
+token.json
+.gdrive-server-credentials.json
 
 # TypeScript compiled output
 lib/

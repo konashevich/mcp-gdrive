@@ -1,0 +1,98 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          MCP GOOGLE DRIVE SERVER - CONFIGURATION COMPLETE            ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+✅ COMPLETED SETUP:
+  • Port configured: 8547 (less common port)
+  • Network access: Enabled (0.0.0.0)
+  • Firewall: Configured for local network (192.168.1.0/24)
+  • Auto-start: Enabled (starts on reboot)
+  • VS Code MCP: Updated to use HTTP/SSE transport
+  • API Key: Generated and configured
+
+📡 SERVER DETAILS:
+  • IP Address: 192.168.1.114
+  • Port: 8547
+  • SSE Endpoint: http://192.168.1.114:8547/sse
+  • Health Check: http://192.168.1.114:8547/health
+  • API Key: 89fbf9d5af4dc97a249de06afb88c7747faa8414af564e8ad4a7d1245bad1adb
+
+🔑 NEXT STEPS - GOOGLE OAUTH SETUP:
+
+Before starting the server, you need to configure Google OAuth credentials:
+
+1. EDIT .env FILE:
+   nano /mnt/merged_ssd/mcp-gdrive/.env
+   
+   Update these lines with your Google Cloud Console credentials:
+   CLIENT_ID=your-actual-client-id.apps.googleusercontent.com
+   CLIENT_SECRET=your-actual-client-secret
+
+2. PLACE OAUTH KEYS FILE:
+   Download OAuth credentials from Google Cloud Console
+   Save as: /home/pi/.config/mcp-gdrive/gcp-oauth.keys.json
+
+3. INITIAL AUTHENTICATION:
+   After configuring above, run:
+   cd /mnt/merged_ssd/mcp-gdrive
+   npm run start:http
+   
+   Follow the browser prompts to authenticate
+   Press Ctrl+C after successful authentication
+
+4. START THE SERVICE:
+   sudo systemctl start mcp-gdrive
+
+📋 SERVICE COMMANDS:
+  • Start:    sudo systemctl start mcp-gdrive
+  • Stop:     sudo systemctl stop mcp-gdrive
+  • Restart:  sudo systemctl restart mcp-gdrive
+  • Status:   sudo systemctl status mcp-gdrive
+  • Logs:     sudo journalctl -u mcp-gdrive -f
+
+🧪 TEST CONNECTION:
+  From this machine:
+    curl http://localhost:8547/health
+
+  From any device on your network:
+    curl -H "X-API-Key: 89fbf9d5af4dc97a249de06afb88c7747faa8414af564e8ad4a7d1245bad1adb" http://192.168.1.114:8547/health
+
+  Expected response:
+    {"status":"ok","service":"mcp-gdrive"}
+
+💻 VS CODE CONFIGURATION:
+  Your mcp.json has been updated with:
+  {
+    "gdrive": {
+      "type": "http",
+      "url": "http://192.168.1.114:8547/sse",
+      "headers": {
+        "X-API-Key": "89fbf9d5af4dc97a249de06afb88c7747faa8414af564e8ad4a7d1245bad1adb"
+      }
+    }
+  }
+
+🔒 SECURITY NOTES:
+  • API Key is required for all requests
+  • Firewall allows only local network (192.168.1.0/24)
+  • To allow specific IP: sudo ufw allow from SPECIFIC_IP to any port 8547
+  • Keep your API key secure - don't share publicly
+
+🚀 QUICK START:
+  If you already have Google OAuth configured elsewhere, you can copy:
+  cp /path/to/existing/gcp-oauth.keys.json /home/pi/.config/mcp-gdrive/
+  cp /path/to/existing/token.json /home/pi/.config/mcp-gdrive/
+  
+  Then update CLIENT_ID and CLIENT_SECRET in .env and start:
+  sudo systemctl start mcp-gdrive
+
+📖 FULL DOCUMENTATION:
+  • START_HERE.md - Quick reference
+  • NETWORK_SETUP.md - Detailed setup guide
+  • INSTALLATION_SUMMARY.md - Complete overview
+
+═══════════════════════════════════════════════════════════════════════
+
+For help: sudo journalctl -u mcp-gdrive -f
+
+═══════════════════════════════════════════════════════════════════════

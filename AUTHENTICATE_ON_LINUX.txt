@@ -1,0 +1,91 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          AUTHENTICATE FROM THIS LINUX MACHINE - QUICK GUIDE          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+YES! You can authenticate directly from this Linux server using SSH port
+forwarding. Here's how:
+
+════════════════════════════════════════════════════════════════════════
+METHOD 1: Quick Manual Steps (Recommended)
+════════════════════════════════════════════════════════════════════════
+
+FROM YOUR WINDOWS PC:
+────────────────────────────────────────────────────────────────────────
+1. Open a NEW PowerShell/Terminal window
+2. Run this command:
+
+   ssh -L 3000:localhost:3000 pi@192.168.1.114
+
+   This creates an SSH tunnel that forwards port 3000 from your Windows
+   machine to the Linux server.
+
+ON THE LINUX SERVER (after step 2):
+────────────────────────────────────────────────────────────────────────
+3. Remove old credentials:
+   rm /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json
+
+4. Start authentication:
+   cd /mnt/merged_ssd/mcp-gdrive
+   npm run start:stdio
+
+5. You'll see output like:
+   "Authorize this app by visiting this url: https://accounts.google.com/..."
+
+BACK ON WINDOWS:
+────────────────────────────────────────────────────────────────────────
+6. Copy the ENTIRE URL from the terminal
+7. Paste it into your Windows browser
+8. Sign in with Google and authorize the app
+9. After success, the page will show a success message
+
+BACK ON LINUX:
+────────────────────────────────────────────────────────────────────────
+10. Press Ctrl+C to stop the manual server
+11. Start the network service:
+    sudo systemctl start mcp-gdrive
+12. Test it:
+    curl http://localhost:9547/health
+
+════════════════════════════════════════════════════════════════════════
+METHOD 2: Using the Script (Automated)
+════════════════════════════════════════════════════════════════════════
+
+1. Set up SSH port forwarding as described above
+2. Run the script:
+   ./authenticate.sh
+
+The script will guide you through the process.
+
+════════════════════════════════════════════════════════════════════════
+WHY THIS WORKS
+════════════════════════════════════════════════════════════════════════
+
+The OAuth flow tries to open a browser on the server (which doesn't have
+one), but it also displays a URL. By using SSH port forwarding:
+
+1. The OAuth library on Linux thinks it's talking to localhost:3000
+2. SSH tunnel forwards that to your Windows machine's port 3000
+3. Your Windows browser can access localhost:3000
+4. The OAuth callback completes successfully
+5. Linux server receives the authorization code
+
+════════════════════════════════════════════════════════════════════════
+CURRENT STATUS
+════════════════════════════════════════════════════════════════════════
+
+✅ Server configured on port 9547
+✅ Auto-start enabled
+✅ Firewall configured
+✅ VS Code MCP settings updated
+❌ Need fresh OAuth token (that's what we're fixing now)
+
+════════════════════════════════════════════════════════════════════════
+ALTERNATIVE: If SSH Port Forwarding Doesn't Work
+════════════════════════════════════════════════════════════════════════
+
+If you can't get SSH port forwarding to work, just authenticate on your
+Windows machine and copy the token file over (see GET_FRESH_TOKEN.md).
+
+════════════════════════════════════════════════════════════════════════
+
+Ready to start? Follow METHOD 1 above!

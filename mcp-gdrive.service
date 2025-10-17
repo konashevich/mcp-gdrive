@@ -1,0 +1,21 @@
+[Unit]
+Description=MCP Google Drive Server
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/mnt/merged_ssd/mcp-gdrive
+EnvironmentFile=/mnt/merged_ssd/mcp-gdrive/.env
+ExecStart=/usr/bin/node /mnt/merged_ssd/mcp-gdrive/dist/server.js
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

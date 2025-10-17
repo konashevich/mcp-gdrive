@@ -1,0 +1,64 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          SIMPLE AUTHENTICATION - NO TUNNEL NEEDED!                   ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+You DON'T need SSH tunneling! Here's the simple way:
+
+════════════════════════════════════════════════════════════════════════
+EASIEST METHOD: Direct URL Copy
+════════════════════════════════════════════════════════════════════════
+
+1. Remove old credentials:
+   rm /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json
+
+2. Start the authentication process:
+   cd /mnt/merged_ssd/mcp-gdrive
+   npm run start:stdio
+
+3. The terminal will display a URL like:
+   "Authorize this app by visiting this url: https://accounts.google.com/..."
+
+4. COPY that entire URL (it's a Google URL, not localhost!)
+
+5. PASTE it into your Windows browser
+
+6. Sign in with Google and authorize the app
+
+7. After authorization, Google will redirect to a page (might show an error,
+   that's OK - the important part already happened)
+
+8. Back on Linux terminal, press Ctrl+C
+
+9. Check if the token was created:
+   ls -la /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json
+
+10. If the file exists, start the service:
+    sudo systemctl start mcp-gdrive
+    curl http://localhost:9547/health
+
+════════════════════════════════════════════════════════════════════════
+WHY NO TUNNEL NEEDED?
+════════════════════════════════════════════════════════════════════════
+
+The Google OAuth library displays TWO things:
+1. A Google URL for you to visit (accounts.google.com/...)
+2. Instructions about localhost (that's just fallback info)
+
+You only need the Google URL! Copy that and open it in your browser.
+The authorization happens on Google's servers, not localhost.
+
+════════════════════════════════════════════════════════════════════════
+TL;DR
+════════════════════════════════════════════════════════════════════════
+
+rm /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json
+cd /mnt/merged_ssd/mcp-gdrive
+npm run start:stdio
+
+→ Copy the Google URL
+→ Open in Windows browser
+→ Authorize
+→ Ctrl+C
+→ sudo systemctl start mcp-gdrive
+
+Done! 🎉
