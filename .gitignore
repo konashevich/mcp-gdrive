@@ -1,0 +1,58 @@
+.env
+/dist
+/node_modules
+
+# Node.js
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# TypeScript
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# JetBrains IDEs
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# OneDrive & temp/sync files
+~$*
+~*.*
+*.tmp
+*.temp
+*.~*
+*.~tmp
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env.local
+.env.*.local
+
+# Secrets and credentials
+credentials.json
+client_secret.json
+
+# TypeScript compiled output
+lib/
+
+# Output of build tools
+build/
+
+# Coverage
+coverage/
+
+# Misc
+*.bak
+*.swp
+
+# Allow local config if needed (uncomment and adjust)
+#!src/setupProxy.js
