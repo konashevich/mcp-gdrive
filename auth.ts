@@ -4,9 +4,33 @@ import fs from "fs";
 import path from "path";
 
 export const SCOPES = [
-  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/drive",
+  "https://www.googleapis.com/auth/documents",
+  "https://www.googleapis.com/auth/presentations",
   "https://www.googleapis.com/auth/spreadsheets",
 ];
+
+function parseGrantedScopes(scopeValue: unknown): Set<string> {
+  if (typeof scopeValue !== "string") {
+    return new Set();
+  }
+
+  return new Set(
+    scopeValue
+      .split(/\s+/)
+      .map((scope) => scope.trim())
+      .filter(Boolean),
+  );
+}
+
+function findMissingScopes(scopeValue: unknown): string[] {
+  const grantedScopes = parseGrantedScopes(scopeValue);
+  if (grantedScopes.size === 0) {
+    return [];
+  }
+
+  return SCOPES.filter((scope) => !grantedScopes.has(scope));
+}
 
 // Get credentials directory from environment variable or use default
 const CREDS_DIR =
@@ -75,6 +99,10 @@ async function authenticateAndSaveCredentials() {
   }
 
   const auth = await authenticateWithTimeout(keyfilePath, SCOPES);
+  if (!auth) {
+    throw new Error("Authentication timed out or was cancelled");
+  }
+
   if (auth) {
     const newAuth = new google.auth.OAuth2();
     newAuth.setCredentials(auth.credentials);
@@ -117,6 +145,15 @@ export async function loadCredentialsQuietly() {
   try {
     const savedCreds = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
     console.error("Loaded existing credentials with scopes:", savedCreds.scope);
+    const missingScopes = findMissingScopes(savedCreds.scope);
+    if (missingScopes.length > 0) {
+      console.error(
+        "Saved credentials are missing required scopes; reauthentication required:",
+        missingScopes,
+      );
+      return null;
+    }
+
     oauth2Client.setCredentials(savedCreds);
 
     const expiryDate = new Date(savedCreds.expiry_date);
@@ -137,6 +174,15 @@ export async function loadCredentialsQuietly() {
         const newCreds = response.credentials;
         ensureCredsDirectory();
         fs.writeFileSync(credentialsPath, JSON.stringify(newCreds, null, 2));
+        const refreshedMissingScopes = findMissingScopes(newCreds.scope);
+        if (refreshedMissingScopes.length > 0) {
+          console.error(
+            "Refreshed credentials are still missing required scopes; reauthentication required:",
+            refreshedMissingScopes,
+          );
+          return null;
+        }
+
         oauth2Client.setCredentials(newCreds);
         console.error("Token refreshed and saved successfully");
       } catch (error) {

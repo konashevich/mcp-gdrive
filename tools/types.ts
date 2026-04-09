@@ -30,6 +30,51 @@ export interface GDriveReadFileInput {
   fileId: string;
 }
 
+export interface GDriveFindCleanupCandidatesInput {
+  rootOnly?: boolean;
+  fileTypes?: string[];
+  untitledOnly?: boolean;
+  emptyOnly?: boolean;
+  inspectEmpty?: boolean;
+  pageToken?: string;
+  pageSize?: number;
+}
+
+export interface GDriveTrashFilesInput {
+  fileIds: string[];
+  dryRun?: boolean;
+}
+
+export interface GDriveMoveFilesInput {
+  fileIds: string[];
+  destinationFolderId: string;
+  dryRun?: boolean;
+}
+
+export interface GDriveOrganizeRootInput {
+  docsFolderId?: string;
+  sheetsFolderId?: string;
+  docsFolderName?: string;
+  sheetsFolderName?: string;
+  dryRun?: boolean;
+}
+
+export interface GDriveUploadLocalFileInput {
+  filePath: string;
+  folderId: string;
+  fileName?: string;
+  reuseIfExists?: boolean;
+}
+
+export interface GDriveImportJoplinExportInput {
+  sourceRootPath: string;
+  driveRootFolderName?: string;
+  resourcesFolderName?: string;
+  supportsBasicGfm?: boolean;
+  embedImagesInline?: boolean;
+  dryRun?: boolean;
+}
+
 export interface GSheetsUpdateCellInput {
   fileId: string;
   range: string;
@@ -42,3 +87,35 @@ export interface GSheetsReadInput {
   sheetId?: number; // Optional specific sheet ID
 }
 
+export interface GDocsCreateFromMarkdownFileInput {
+  filePath: string;
+  title?: string;
+  folderId?: string;
+  supportsBasicGfm?: boolean;
+}
+
+export interface GSlidesCreatePresentationInput {
+  title: string;
+  folderId?: string;
+}
+
+export interface GSlidesGetPresentationInput {
+  presentationId: string;
+  fields?: string;
+}
+
+export interface GSlidesGetSlideInput {
+  presentationId: string;
+  slideObjectId: string;
+}
+
+export interface GSlidesSummarizePresentationInput {
+  presentationId: string;
+  includeNotes?: boolean;
+}
+
+export interface GSlidesBatchUpdatePresentationInput {
+  presentationId: string;
+  requests: Record<string, unknown>[];
+  writeControl?: Record<string, unknown>;
+}

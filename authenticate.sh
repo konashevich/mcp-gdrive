@@ -51,7 +51,7 @@ echo "════════════════════════�
 echo ""
 echo "Once you're connected with port forwarding, run:"
 echo ""
-echo "  cd /mnt/merged_ssd/mcp-gdrive"
+echo "  cd /mnt/merged_ssd/MCP/mcp-gdrive"
 echo "  rm /home/pi/.config/mcp-gdrive/.gdrive-server-credentials.json"
 echo "  npm run start:stdio"
 echo ""
@@ -84,5 +84,5 @@ echo "Press Ctrl+C after successful authentication."
 echo ""
 sleep 2
 
-cd /mnt/merged_ssd/mcp-gdrive
+cd /mnt/merged_ssd/MCP/mcp-gdrive
 npm run start:stdio
