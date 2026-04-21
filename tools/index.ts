@@ -14,6 +14,43 @@ import { schema as gslidesGetPresentationSchema, getPresentation } from './gslid
 import { schema as gslidesGetSlideSchema, getSlide } from './gslides_get_slide.js';
 import { schema as gslidesSummarizePresentationSchema, summarizePresentation } from './gslides_summarize_presentation.js';
 import { schema as gslidesBatchUpdatePresentationSchema, batchUpdatePresentation } from './gslides_batch_update_presentation.js';
+import { schema as gslidesInsertImageSchema, insertImage } from './gslides_insert_image.js';
+import { schema as gkeepListNotesSchema, listKeepNotes } from './gkeep_list_notes.js';
+import { schema as gkeepSearchNotesSchema, searchKeepNotes } from './gkeep_search_notes.js';
+import { schema as gkeepGetNoteSchema, getKeepNote } from './gkeep_get_note.js';
+import { schema as gkeepCreateNoteSchema, createKeepNote } from './gkeep_create_note.js';
+import { schema as gkeepDeleteNoteSchema, deleteKeepNote } from './gkeep_delete_note.js';
+import { schema as gkeepDownloadAttachmentSchema, downloadKeepAttachment } from './gkeep_download_attachment.js';
+import {
+  unofficialSearchNotesSchema as gkeepUnofficialSearchNotesSchema,
+  searchUnofficialKeepNotes,
+  unofficialGetNoteSchema as gkeepUnofficialGetNoteSchema,
+  getUnofficialKeepNote,
+  updateNoteSchema as gkeepUpdateNoteSchema,
+  updateUnofficialKeepNote,
+  pinNoteSchema as gkeepPinNoteSchema,
+  pinUnofficialKeepNote,
+  archiveNoteSchema as gkeepArchiveNoteSchema,
+  archiveUnofficialKeepNote,
+  listLabelsSchema as gkeepListLabelsSchema,
+  listUnofficialKeepLabels,
+  createLabelSchema as gkeepCreateLabelSchema,
+  createUnofficialKeepLabel,
+  renameLabelSchema as gkeepRenameLabelSchema,
+  renameUnofficialKeepLabel,
+  deleteLabelSchema as gkeepDeleteLabelSchema,
+  deleteUnofficialKeepLabel,
+  addLabelToNoteSchema as gkeepAddLabelToNoteSchema,
+  addLabelToUnofficialKeepNote,
+  removeLabelFromNoteSchema as gkeepRemoveLabelFromNoteSchema,
+  removeLabelFromUnofficialKeepNote,
+  addListItemSchema as gkeepAddListItemSchema,
+  addUnofficialKeepListItem,
+  updateListItemSchema as gkeepUpdateListItemSchema,
+  updateUnofficialKeepListItem,
+  deleteListItemSchema as gkeepDeleteListItemSchema,
+  deleteUnofficialKeepListItem,
+} from './gkeep_unofficial.js';
 import { 
   Tool, 
   GDriveSearchInput, 
@@ -31,7 +68,27 @@ import {
   GSlidesGetPresentationInput,
   GSlidesGetSlideInput,
   GSlidesSummarizePresentationInput,
-  GSlidesBatchUpdatePresentationInput
+  GSlidesBatchUpdatePresentationInput,
+  GSlidesInsertImageInput,
+  GKeepListNotesInput,
+  GKeepSearchNotesInput,
+  GKeepGetNoteInput,
+  GKeepCreateNoteInput,
+  GKeepDeleteNoteInput,
+  GKeepDownloadAttachmentInput,
+  GKeepUnofficialSearchNotesInput,
+  GKeepUnofficialGetNoteInput,
+  GKeepUpdateNoteInput,
+  GKeepPinNoteInput,
+  GKeepArchiveNoteInput,
+  GKeepLabelListInput,
+  GKeepCreateLabelInput,
+  GKeepRenameLabelInput,
+  GKeepDeleteLabelInput,
+  GKeepModifyNoteLabelInput,
+  GKeepAddListItemInput,
+  GKeepUpdateListItemInput,
+  GKeepDeleteListItemInput
 } from './types.js';
 
 export const tools: Tool<any>[] = [
@@ -98,5 +155,89 @@ export const tools: Tool<any>[] = [
   {
     ...gslidesBatchUpdatePresentationSchema,
     handler: batchUpdatePresentation,
+  },
+  {
+    ...gslidesInsertImageSchema,
+    handler: insertImage,
+  },
+  {
+    ...gkeepListNotesSchema,
+    handler: listKeepNotes,
+  },
+  {
+    ...gkeepSearchNotesSchema,
+    handler: searchKeepNotes,
+  },
+  {
+    ...gkeepGetNoteSchema,
+    handler: getKeepNote,
+  },
+  {
+    ...gkeepCreateNoteSchema,
+    handler: createKeepNote,
+  },
+  {
+    ...gkeepDeleteNoteSchema,
+    handler: deleteKeepNote,
+  },
+  {
+    ...gkeepDownloadAttachmentSchema,
+    handler: downloadKeepAttachment,
+  },
+  {
+    ...gkeepUnofficialSearchNotesSchema,
+    handler: searchUnofficialKeepNotes,
+  },
+  {
+    ...gkeepUnofficialGetNoteSchema,
+    handler: getUnofficialKeepNote,
+  },
+  {
+    ...gkeepUpdateNoteSchema,
+    handler: updateUnofficialKeepNote,
+  },
+  {
+    ...gkeepPinNoteSchema,
+    handler: pinUnofficialKeepNote,
+  },
+  {
+    ...gkeepArchiveNoteSchema,
+    handler: archiveUnofficialKeepNote,
+  },
+  {
+    ...gkeepListLabelsSchema,
+    handler: listUnofficialKeepLabels,
+  },
+  {
+    ...gkeepCreateLabelSchema,
+    handler: createUnofficialKeepLabel,
+  },
+  {
+    ...gkeepRenameLabelSchema,
+    handler: renameUnofficialKeepLabel,
+  },
+  {
+    ...gkeepDeleteLabelSchema,
+    handler: deleteUnofficialKeepLabel,
+  },
+  {
+    ...gkeepAddLabelToNoteSchema,
+    handler: addLabelToUnofficialKeepNote,
+  },
+  {
+    ...gkeepRemoveLabelFromNoteSchema,
+    handler: removeLabelFromUnofficialKeepNote,
+  },
+  {
+    ...gkeepAddListItemSchema,
+    handler: addUnofficialKeepListItem,
+  },
+  {
+    ...gkeepUpdateListItemSchema,
+    handler: updateUnofficialKeepListItem,
+  },
+  {
+    ...gkeepDeleteListItemSchema,
+    handler: deleteUnofficialKeepListItem,
   }
 ];

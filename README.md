@@ -2,6 +2,10 @@
 
 This MCP server integrates with Google Drive to allow listing, reading, and searching files, as well as the ability to read and write Google Sheets, Google Docs, and Google Slides.
 
+It also includes limited official Google Keep support for creating notes, listing/searching notes, reading notes, deleting notes, and downloading existing attachments.
+
+For features that the official API does not expose, this repository also includes an unofficial Google Keep backend powered by `gkeepapi`. That unofficial path covers note edits, label management, pinning, archiving, and checklist item updates, but it requires separate unofficial Keep credentials.
+
 This project includes code originally developed by Anthropic, PBC, licensed under the MIT License from [this repo](https://github.com/modelcontextprotocol/servers/tree/main/src/gdrive).
 
 ## Components
@@ -155,6 +159,163 @@ This project includes code originally developed by Anthropic, PBC, licensed unde
     - `writeControl` (object, optional): Optional revision control object.
   - **Output**: Returns the Slides API batch update response.
 
+- **gkeep_list_notes**
+
+  - **Description**: List Google Keep notes using the official Keep API.
+  - **Input**:
+    - `pageToken` (string, optional): Token for the next page of results.
+    - `pageSize` (number, optional): Maximum number of notes to return.
+    - `filter` (string, optional): Keep API filter over `create_time`, `update_time`, `trash_time`, and `trashed`.
+  - **Output**: Returns serialized note objects and the next page token.
+
+- **gkeep_search_notes**
+
+  - **Description**: Search Keep note titles and body content client-side by scanning note pages from the official API.
+  - **Input**:
+    - `query` (string): Text to match against title and body content.
+    - `includeTrashed` (boolean, optional): Whether to also search trashed notes.
+    - `limit` (number, optional): Maximum number of matches to return.
+    - `pageSize` (number, optional): Page size used while scanning.
+  - **Output**: Returns matched serialized note objects.
+
+- **gkeep_get_note**
+
+  - **Description**: Read one Google Keep note by resource name.
+  - **Input**:
+    - `noteName` (string): Resource name like `notes/{noteId}` or a bare note ID.
+  - **Output**: Returns the serialized note.
+
+- **gkeep_create_note**
+
+  - **Description**: Create a Google Keep text note or checklist note using the official API.
+  - **Input**:
+    - `title` (string, optional): Note title.
+    - `text` (string, optional): Text body for a standard note.
+    - `items` (array, optional): Checklist items for a list note.
+  - **Output**: Returns the created serialized note.
+
+- **gkeep_delete_note**
+
+  - **Description**: Permanently delete a Google Keep note using the official API.
+  - **Input**:
+    - `noteName` (string): Resource name like `notes/{noteId}` or a bare note ID.
+  - **Output**: Confirms deletion.
+
+- **gkeep_download_attachment**
+
+  - **Description**: Download an existing Google Keep attachment to a local file.
+  - **Input**:
+    - `attachmentName` (string): Full attachment resource name like `notes/{noteId}/attachments/{attachmentId}`.
+    - `mimeType` (string): MIME type to download.
+    - `outputPath` (string): Absolute local destination path.
+    - `overwrite` (boolean, optional): Overwrite existing file.
+  - **Output**: Confirms the local file download.
+
+- **gkeep_update_note**
+
+  - **Description**: Update an existing Google Keep note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `title` (string, optional): Updated note title.
+    - `text` (string, optional): Updated note text.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_pin_note**
+
+  - **Description**: Pin or unpin a Google Keep note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `pinned` (boolean, optional): Defaults to `true`.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_archive_note**
+
+  - **Description**: Archive or unarchive a Google Keep note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `archived` (boolean, optional): Defaults to `true`.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_list_labels**
+
+  - **Description**: List Keep labels through the unofficial Keep backend.
+  - **Input**:
+    - `includeStats` (boolean, optional): Include per-label note counts.
+  - **Output**: Returns labels, optionally with note counts.
+
+- **gkeep_create_label**
+
+  - **Description**: Create a Keep label through the unofficial Keep backend.
+  - **Input**:
+    - `name` (string): Label name.
+  - **Output**: Returns the created or existing label.
+
+- **gkeep_rename_label**
+
+  - **Description**: Rename a Keep label through the unofficial Keep backend.
+  - **Input**:
+    - `labelId` (string): Label ID.
+    - `newName` (string): New label name.
+  - **Output**: Returns the renamed label.
+
+- **gkeep_delete_label**
+
+  - **Description**: Delete a Keep label through the unofficial Keep backend.
+  - **Input**:
+    - `labelId` (string): Label ID.
+  - **Output**: Confirms deletion.
+
+- **gkeep_add_label_to_note**
+
+  - **Description**: Assign a label to a Keep note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `labelId` (string): Label ID.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_remove_label_from_note**
+
+  - **Description**: Remove a label from a Keep note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `labelId` (string): Label ID.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_add_list_item**
+
+  - **Description**: Add a checklist item to a list note through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `text` (string): Checklist item text.
+    - `checked` (boolean, optional): Whether the item starts checked.
+  - **Output**: Returns the updated note and new item ID.
+
+- **gkeep_update_list_item**
+
+  - **Description**: Update a checklist item through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `itemId` (string): Checklist item ID.
+    - `text` (string, optional): Updated item text.
+    - `checked` (boolean, optional): Updated checked state.
+  - **Output**: Returns the updated note payload.
+
+- **gkeep_delete_list_item**
+
+  - **Description**: Delete a checklist item through the unofficial Keep backend.
+  - **Input**:
+    - `noteId` (string): Keep note ID or `notes/{id}` resource name.
+    - `itemId` (string): Checklist item ID.
+  - **Output**: Confirms deletion and returns the updated note payload.
+
+### Google Keep limitations
+
+The official Google Keep API does not currently expose note content updates, label CRUD, pinning, archiving, or attachment upload. Those operations are therefore not included in this server when using the official API.
+
+This means the official Keep integration in this repository intentionally covers only the subset that the official API supports: create, list, search, get, delete, permission metadata visibility, and downloading existing attachments.
+
+For everything else, the unofficial backend is used. The main remaining limitation is true attachment upload into Keep notes: `gkeepapi` exposes media reading and media links but currently leaves upload support stubbed, so this repository still does not provide a working tool to upload an image or file directly into a Keep note.
+
 ### Joplin Import Notes
 
 - The first-pass Joplin importer recreates notebook folders, imports Markdown notes as Google Docs, uploads linked attachments into the same Drive folder as the note, and rewrites local links to Google Drive or Google Docs URLs.
@@ -180,8 +341,8 @@ The server provides access to Google Drive files:
 1. [Create a new Google Cloud project](https://console.cloud.google.com/projectcreate)
 2. [Enable the Google Drive API](https://console.cloud.google.com/workspace-api/products)
 3. [Configure an OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) ("internal" is fine for testing)
-4. Add OAuth scopes `https://www.googleapis.com/auth/drive`, `https://www.googleapis.com/auth/documents`, `https://www.googleapis.com/auth/presentations`, `https://www.googleapis.com/auth/spreadsheets`
-5. In order to allow interaction with Drive, Sheets, Docs, and Slides you will also need to enable the [Google Drive API](https://console.cloud.google.com/workspace-api/products), [Google Sheets API](https://console.cloud.google.com/apis/api/sheets.googleapis.com/), [Google Docs API](https://console.cloud.google.com/marketplace/product/google/docs.googleapis.com), and [Google Slides API](https://console.cloud.google.com/apis/library/slides.googleapis.com) in your project's Enabled APIs and Services section.
+4. Add OAuth scopes `https://www.googleapis.com/auth/drive`, `https://www.googleapis.com/auth/documents`, `https://www.googleapis.com/auth/keep`, `https://www.googleapis.com/auth/presentations`, `https://www.googleapis.com/auth/spreadsheets`
+5. In order to allow interaction with Drive, Sheets, Docs, Slides, and Keep you will also need to enable the [Google Drive API](https://console.cloud.google.com/workspace-api/products), [Google Sheets API](https://console.cloud.google.com/apis/api/sheets.googleapis.com/), [Google Docs API](https://console.cloud.google.com/marketplace/product/google/docs.googleapis.com), [Google Slides API](https://console.cloud.google.com/apis/library/slides.googleapis.com), and the Google Keep API in your project's Enabled APIs and Services section.
 6. [Create an OAuth Client ID](https://console.cloud.google.com/apis/credentials/oauthclient) for application type "Desktop App"
 7. Download the JSON file of your client's OAuth keys
 8. Rename the key file to `gcp-oauth.keys.json` and place into the path you specify with `GDRIVE_CREDS_DIR` (i.e. `/Users/username/.config/mcp-gdrive`)
@@ -193,6 +354,71 @@ GDRIVE_CREDS_DIR=/path/to/config/directory
 CLIENT_ID=<CLIENT_ID>
 CLIENT_SECRET=<CLIENT_SECRET>
 ```
+
+### Unofficial Google Keep setup
+
+The unofficial Keep tools require a separate Python environment and unofficial Keep credentials.
+
+The helper scripts are bundled in the npm package, but the Python environment is not. That means npm-installed users must create `.venv-keep` inside the installed package directory before the unofficial Keep tools can run.
+
+1. Create the helper virtual environment:
+
+```bash
+python3 -m venv .venv-keep
+.venv-keep/bin/pip install -r requirements-keep.txt
+```
+
+  If you are running from a repository checkout, do this in the repository root.
+
+  If you installed the package from npm, do this in the installed package directory so these paths exist relative to the package root:
+  - `.venv-keep/bin/python`
+  - `scripts/gkeep_unofficial_helper.py`
+
+  For a global npm install, first locate the package directory:
+
+```bash
+npm root -g
+```
+
+  Then `cd` into `@isaacphi/mcp-gdrive` under that directory and create `.venv-keep` there.
+
+2. Add these values to `.env`:
+
+```bash
+GOOGLE_EMAIL=your-google-account-email@example.com
+GOOGLE_MASTER_TOKEN=your-google-master-token
+```
+
+3. Obtain the master token using the `gkeepapi` / `gpsoauth` workflow. This is separate from the official OAuth flow used for Drive, Docs, Sheets, Slides, and the official Keep API.
+
+  The repository includes an interactive helper for this:
+
+```bash
+npm run setup:keep-unofficial -- --write-env
+```
+
+  It supports two methods:
+  - `oauth-token` (default): open `https://accounts.google.com/EmbeddedSetup`, sign in, then paste the `oauth_token` cookie value.
+  - `password`: enter the Google account password or app password directly into the helper.
+
+  You can force either mode with one of these commands:
+
+```bash
+npm run setup:keep-unofficial -- --method oauth-token --write-env
+npm run setup:keep-unofficial -- --method password --write-env
+```
+
+4. Restart the MCP server after the helper environment and credentials are in place.
+
+The unofficial Keep backend can edit notes, manage labels, pin/archive notes, and modify checklist items, but it is not supported by Google and can break if Google changes Keep internals.
+
+You can verify the unofficial backend wiring with:
+
+```bash
+npm run smoke:keep-unofficial
+```
+
+That command is read-only. It authenticates through the Python helper and lists labels with counts.
 
 Make sure to build the server with either `npm run build` or `npm run watch`.
 
@@ -212,7 +438,7 @@ You will be prompted to authenticate with your browser. You must authenticate wi
 
 Your OAuth token is saved in the directory specified by the `GDRIVE_CREDS_DIR` environment variable.
 
-If you are upgrading an existing installation, delete the saved token or rerun the auth flow so the stored credentials include the newer Drive, Docs, and Slides scopes.
+If you are upgrading an existing installation, delete the saved token or rerun the auth flow so the stored credentials include the newer Drive, Docs, Slides, and Keep scopes.
 
 ![Authentication Prompt](https://i.imgur.com/TbyV6Yq.png)
 

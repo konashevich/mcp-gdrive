@@ -21,6 +21,23 @@ import { InternalToolResponse } from "./tools/types.js";
 
 const drive = google.drive("v3");
 
+const unofficialKeepToolNames = new Set([
+  "gkeep_unofficial_search_notes",
+  "gkeep_unofficial_get_note",
+  "gkeep_update_note",
+  "gkeep_pin_note",
+  "gkeep_archive_note",
+  "gkeep_list_labels",
+  "gkeep_create_label",
+  "gkeep_rename_label",
+  "gkeep_delete_label",
+  "gkeep_add_label_to_note",
+  "gkeep_remove_label_from_note",
+  "gkeep_add_list_item",
+  "gkeep_update_list_item",
+  "gkeep_delete_list_item",
+]);
+
 // Configuration
 const PORT = parseInt(process.env.MCP_PORT || "3000");
 const HOST = process.env.MCP_HOST || "0.0.0.0"; // Bind to all interfaces
@@ -123,10 +140,13 @@ function convertToolResponse(response: InternalToolResponse) {
 }
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  await ensureAuth();
   const tool = tools.find((t) => t.name === request.params.name);
   if (!tool) {
     throw new Error("Tool not found");
+  }
+
+  if (!unofficialKeepToolNames.has(tool.name)) {
+    await ensureAuth();
   }
 
   const result = await tool.handler(request.params.arguments as any);

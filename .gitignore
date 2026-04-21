@@ -1,6 +1,8 @@
 .env
 /dist
 /node_modules
+/.venv-keep
+__pycache__/
 
 # Node.js
 npm-debug.log*

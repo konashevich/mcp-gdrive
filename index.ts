@@ -19,6 +19,23 @@ import { InternalToolResponse } from "./tools/types.js";
 
 const drive = google.drive("v3");
 
+const unofficialKeepToolNames = new Set([
+  "gkeep_unofficial_search_notes",
+  "gkeep_unofficial_get_note",
+  "gkeep_update_note",
+  "gkeep_pin_note",
+  "gkeep_archive_note",
+  "gkeep_list_labels",
+  "gkeep_create_label",
+  "gkeep_rename_label",
+  "gkeep_delete_label",
+  "gkeep_add_label_to_note",
+  "gkeep_remove_label_from_note",
+  "gkeep_add_list_item",
+  "gkeep_update_list_item",
+  "gkeep_delete_list_item",
+]);
+
 const server = new Server(
   {
     name: "example-servers/gdrive",
@@ -116,10 +133,13 @@ function convertToolResponse(response: InternalToolResponse) {
 }
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  await ensureAuth();
   const tool = tools.find((t) => t.name === request.params.name);
   if (!tool) {
     throw new Error("Tool not found");
+  }
+
+  if (!unofficialKeepToolNames.has(tool.name)) {
+    await ensureAuth();
   }
 
   const result = await tool.handler(request.params.arguments as any);
@@ -129,9 +149,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function startServer() {
   try {
     console.error("Starting server");
-    
-    // Add this line to force authentication at startup
-    await ensureAuth(); // This will trigger the auth flow if no valid credentials exist
+    await ensureAuthQuietly();
     
     const transport = new StdioServerTransport();
     await server.connect(transport);
