@@ -2,11 +2,11 @@ import { authenticate } from "@google-cloud/local-auth";
 import { google } from "googleapis";
 import fs from "fs";
 import path from "path";
+import { debugLog } from "./log.js";
 
 export const SCOPES = [
   "https://www.googleapis.com/auth/drive",
   "https://www.googleapis.com/auth/documents",
-  "https://www.googleapis.com/auth/keep",
   "https://www.googleapis.com/auth/presentations",
   "https://www.googleapis.com/auth/spreadsheets",
 ];
@@ -43,7 +43,7 @@ const CREDS_DIR =
 function ensureCredsDirectory() {
   try {
     fs.mkdirSync(CREDS_DIR, { recursive: true });
-    console.error(`Ensured credentials directory exists at: ${CREDS_DIR}`);
+    debugLog(`Ensured credentials directory exists at: ${CREDS_DIR}`);
   } catch (error) {
     console.error(
       `Failed to create credentials directory: ${CREDS_DIR}`,
@@ -78,11 +78,11 @@ async function authenticateWithTimeout(
 }
 
 async function authenticateAndSaveCredentials() {
-  console.error("Launching auth flow…");
-  console.error("Using credentials path:", credentialsPath);
+  debugLog("Launching auth flow…");
+  debugLog("Using credentials path:", credentialsPath);
 
   const keyfilePath = path.join(CREDS_DIR, "gcp-oauth.keys.json");
-  console.error("Using keyfile path:", keyfilePath);
+  debugLog("Using keyfile path:", keyfilePath);
 
   // Basic validations to give clearer feedback instead of module not found errors
   if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
@@ -111,13 +111,13 @@ async function authenticateAndSaveCredentials() {
 
   try {
     const { credentials } = await auth.refreshAccessToken();
-    console.error("Received new credentials with scopes:", credentials.scope);
+    debugLog("Received new credentials with scopes:", credentials.scope);
 
     // Ensure directory exists before saving
     ensureCredsDirectory();
 
     fs.writeFileSync(credentialsPath, JSON.stringify(credentials, null, 2));
-    console.error(
+    debugLog(
       "Credentials saved successfully with refresh token to:",
       credentialsPath,
     );
@@ -131,7 +131,7 @@ async function authenticateAndSaveCredentials() {
 
 // Try to load credentials without prompting for auth
 export async function loadCredentialsQuietly() {
-  console.error("Attempting to load credentials from:", credentialsPath);
+  debugLog("Attempting to load credentials from:", credentialsPath);
 
   const oauth2Client = new google.auth.OAuth2(
     process.env.CLIENT_ID,
@@ -139,13 +139,13 @@ export async function loadCredentialsQuietly() {
   );
 
   if (!fs.existsSync(credentialsPath)) {
-    console.error("No credentials file found");
+    debugLog("No credentials file found");
     return null;
   }
 
   try {
     const savedCreds = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
-    console.error("Loaded existing credentials with scopes:", savedCreds.scope);
+    debugLog("Loaded existing credentials with scopes:", savedCreds.scope);
     const missingScopes = findMissingScopes(savedCreds.scope);
     if (missingScopes.length > 0) {
       console.error(
@@ -162,14 +162,14 @@ export async function loadCredentialsQuietly() {
     const fiveMinutes = 5 * 60 * 1000;
     const timeToExpiry = expiryDate.getTime() - now.getTime();
 
-    console.error("Token expiry status:", {
+    debugLog("Token expiry status:", {
       expiryDate: expiryDate.toISOString(),
       timeToExpiryMinutes: Math.floor(timeToExpiry / (60 * 1000)),
       hasRefreshToken: !!savedCreds.refresh_token,
     });
 
     if (timeToExpiry < fiveMinutes && savedCreds.refresh_token) {
-      console.error("Attempting to refresh token using refresh_token");
+      debugLog("Attempting to refresh token using refresh_token");
       try {
         const response = await oauth2Client.refreshAccessToken();
         const newCreds = response.credentials;
@@ -185,7 +185,7 @@ export async function loadCredentialsQuietly() {
         }
 
         oauth2Client.setCredentials(newCreds);
-        console.error("Token refreshed and saved successfully");
+        debugLog("Token refreshed and saved successfully");
       } catch (error) {
         console.error("Failed to refresh token:", error);
         return null;
@@ -213,17 +213,17 @@ export async function getValidCredentials(forceAuth = false) {
 
 // Background refresh that never prompts for auth
 export function setupTokenRefresh() {
-  console.error("Setting up automatic token refresh interval (45 minutes)");
+  debugLog("Setting up automatic token refresh interval (45 minutes)");
   return setInterval(
     async () => {
       try {
-        console.error("Running scheduled token refresh check");
+        debugLog("Running scheduled token refresh check");
         const auth = await loadCredentialsQuietly();
         if (auth) {
           google.options({ auth });
-          console.error("Completed scheduled token refresh");
+          debugLog("Completed scheduled token refresh");
         } else {
-          console.error("Skipping token refresh - no valid credentials");
+          debugLog("Skipping token refresh - no valid credentials");
         }
       } catch (error) {
         console.error("Error in automatic token refresh:", error);

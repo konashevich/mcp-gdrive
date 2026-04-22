@@ -25,20 +25,14 @@
   },
   "files": [
     "dist",
-    "scripts/gkeep_unofficial_helper.py",
-    "scripts/setup_keep_unofficial.py",
-    "scripts/smoke-keep-unofficial.mjs",
-    "requirements-keep.txt",
     ".env.example"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/*.js",
+    "build": "shx rm -rf dist && tsc && shx chmod +x dist/*.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "start:stdio": "node dist/index.js",
-    "start:http": "node dist/server.js",
-    "setup:keep-unofficial": ".venv-keep/bin/python scripts/setup_keep_unofficial.py",
-    "smoke:keep-unofficial": "node scripts/smoke-keep-unofficial.mjs"
+    "start:http": "node dist/server.js"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
